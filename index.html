@@ -17,7 +17,9 @@
   <body>
     <h1>p5 Network Proxy <span class="badge badge-secondary">v 0.9</span></h1>
     <p>
-          
+        
+        <button type="button" class="btn btn-primary" onclick="closeSocket()">Close Socket</button>
+        
     Websocket running on: <span id="tobereplaced">to be replaced</span> 
     </p>
     <script>
@@ -41,6 +43,12 @@
         });
 
         $('#tobereplaced').text(ipport);
+
+        function closeSocket()
+        {
+            wss.close();
+            alert("socket closed");
+        }
     </script>
 
   </body>
