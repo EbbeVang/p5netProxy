@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="./contents/bootstrap.min.css" />
+ 
+<!-- Bootstrap Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script>let $ = require('jquery');</script>
+<script>require('popper.js');</script>
+<script>require('bootstrap');</script>
+  </head>
+  <body>
+    <h1>p5 Network Proxy <span class="badge badge-secondary">v 0.9</span></h1>
+    <p>
+          
+    Websocket running on: <span id="tobereplaced">to be replaced</span> 
+    </p>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    
+    <script>
+        
+
+        const WebSocket = require('ws');
+        var ipport = 9000;
+        const wss = new WebSocket.Server({ port: ipport });
+
+        wss.on('connection', function connection(ws) {
+            ws.on('message', function incoming(message) {
+                console.log('received: %s', message);
+                });
+            ws.send('something');
+        });
+
+        $('#tobereplaced').text(ipport);
+    </script>
+
+  </body>
+</html>
