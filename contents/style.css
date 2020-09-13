@@ -1,0 +1,13 @@
+#menu{
+    float: left;
+    width:20%;
+    font-size: 2em;
+    text-align: center;
+
+}
+
+#detail{
+    float: left;
+    width: 80%;
+    
+}

@@ -26,7 +26,7 @@ async function sendObjects()
         obj.data=commands[random];
 
         await sleep(3000);
-        connection.send(JSON.stringify(obj));
+        connection.send("this is bob");
 
     }
 }
@@ -37,10 +37,10 @@ connection.onopen = () => {
 }
  
 connection.onerror = (error) => {
-  console.log(`WebSocket error: ${error}`)
+  
 }
  
 connection.onmessage = (e) => {
-  console.log(e.data)
+
 }
 
