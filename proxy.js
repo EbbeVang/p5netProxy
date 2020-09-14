@@ -82,7 +82,13 @@ function handleIncomingWebsocketMessage(message){
     }
 }
 function handleIncomingUDPMessages(message, rinfo){
-    wsConnection.send(message);
+    obj = {
+        'ip': rinfo.address,
+        'port': rinfo.port,
+        'protocol': 'UDP',
+        'data': message
+    }
+    wsConnection.send(JSON.stringify(obj));
 }
 function insertIntoLogTable(to, from, data){
     $('#logTable tbody').prepend('<tr><td>'+to+'</td><td>'+from+'</td><td>'+data+'</td></tr>');
