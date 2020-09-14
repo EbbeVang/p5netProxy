@@ -2,8 +2,7 @@ const WebSocket = require('ws');
 const net = require('net');
 const dgram = require('dgram');
 var websocketserver;
-var tcpConnections = [];
-var udpConnections = [];
+var connectionPorts = [];
 var wsconnected = false;
 var wsConnection;
 var udpSender;
@@ -20,8 +19,7 @@ function openWebsocket(n){
     websocketserver.on('connection', function connection(ws) {
         wsConnection = ws;
         ws.on('message', function incoming(message) {
-            console.log('received: %s', message);
-            //ws.send('something');
+            //console.log('received: %s', message);
             handleIncomingWebsocketMessage(message);
             insertIntoLogTable("UDP", "WebSocket", message);
         });       
@@ -57,7 +55,7 @@ function newConnection(protocol, ip, port){
             insertIntoLogTable("websocket", "UDP:"+rinfo.address+":"+rinfo.port, msg);
         });
         s.bind(port); 
-        udpConnections.push(s);
+        connectionPorts.push(port);
         insertIntoConnectionTable(protocol, ip, port);
     }
     else if(protocol==="TCP")
@@ -75,7 +73,7 @@ function handleIncomingWebsocketMessage(message){
     }
     console.log(obj.protocol);
     if (obj.hasOwnProperty('subscribe')) { 
-        if (obj.subscribe === true && portNotSubscribed(obj.port))
+        if (obj.subscribe === true && !connectionPorts.includes(obj.port))
         {
             console.log("subscribe = true");
             newConnection(obj.protocol.toUpperCase(), obj.ip, obj.port)
@@ -87,19 +85,6 @@ function handleIncomingWebsocketMessage(message){
         var data = new Buffer(obj.data);
         udpSender.send(data, 0, message.length, obj.port, obj.ip)
     }
-}
-function portNotSubscribed(portnumber)
-{
-    // does onbly check UDP!
-    for (var connection in udpConnections)
-    {
-        if (connection.address().port === portnumber)
-        {
-            return false
-        }
-        
-    }
-    return true;
 }
 
 function handleIncomingUDPMessages(message, rinfo){
