@@ -109,7 +109,9 @@ function handleIncomingUDPMessages(message, rinfo){
         'protocol': 'UDP',
         'data': message
     }
-    wsConnection.send(JSON.stringify(obj));
+    if (wsConnection != null){
+        wsConnection.send(JSON.stringify(obj));
+    }    
 }
 function insertIntoLogTable(to, from, data){
     $('#logTable tbody').prepend('<tr><td>'+to+'</td><td>'+from+'</td><td>'+data+'</td></tr>');
