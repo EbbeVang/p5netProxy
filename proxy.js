@@ -45,7 +45,7 @@ function setupUDPsenderPort(port){
 
 function newConnection(protocol, ip, port){
     //alert(protocol + ":" + ip + ":" + port);
-    if (protocol==="UDP")
+    if (protocol.toLowerCase()==="udp")
     {
         var s = dgram.createSocket('udp4');
         s.on('message', function(msg, rinfo) {
@@ -74,6 +74,13 @@ function handleIncomingWebsocketMessage(message){
         return;
     }
     console.log(obj.protocol);
+    if (obj.hasOwnProperty('subscribe')) { 
+        if (obj.subscribe === true && portNotSubscribed(obj.port))
+        {
+            console.log("subscribe = true");
+            newConnection(obj.protocol.toUpperCase(), obj.ip, obj.port)
+        }
+    }
     if (obj.protocol.toLowerCase() === "udp")
     {
         console.log("try sending udp message: "+JSON.stringify(obj));
@@ -81,6 +88,20 @@ function handleIncomingWebsocketMessage(message){
         udpSender.send(data, 0, message.length, obj.port, obj.ip)
     }
 }
+function portNotSubscribed(portnumber)
+{
+    // does onbly check UDP!
+    for (var connection in udpConnections)
+    {
+        if (connection.address().port === portnumber)
+        {
+            return false
+        }
+        
+    }
+    return true;
+}
+
 function handleIncomingUDPMessages(message, rinfo){
     obj = {
         'ip': rinfo.address,
