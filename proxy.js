@@ -1,18 +1,18 @@
 const WebSocket = require('ws');
 const net = require('net');
 const dgram = require('dgram');
-var websocketserver;
-var connectionPorts = [];
+let websocketserver;
+let udpConnections = [];
 var wsconnected = false;
 var wsConnection;
-var udpSender;
 start();
 
 function start(){
     openWebsocket($('#ws_port').val());
-    udpSender = dgram.createSocket("udp4");
-    setupUDPsenderPort($('#udpPortNumber').val());
+    //udpSender = dgram.createSocket("udp4");
+    //setupUDPsenderPort($('#udpPortNumber').val());
 }
+
 function openWebsocket(n){
     websocketserver = new WebSocket.Server({ port: n });
     websocketserver.on('connection', function connection(ws) {
@@ -27,41 +27,72 @@ function openWebsocket(n){
     $('#ws_open').prop('disabled', true);
     $('#ws_close').prop('disabled', false);   
 }
+
 function closeWebsocket(){
     wsconnected = false;
     websocketserver.close();
     $('#ws_close').attr("disabled", true);
     $('#ws_open').attr("disabled", false);
 }
-function setupUDPsenderPort(port){
+/*function setupUdpConnection(port){
     udpSender = dgram.createSocket("udp4");
     udpSender.bind(port);
     //console.log("change udpsender port to:" + port);
+    udpSender.on('message', (msg, rinfo) => {
+        console.log("Fucked msg: "+msg.toString() + JSON.stringify(rinfo));
+    });
+}*/
 
-}
-
-function newConnection(protocol, ip, port){
-    //alert(protocol + ":" + ip + ":" + port);
-    if (protocol.toLowerCase()==="udp")
+function createUdpConnection(jsonObj){
+    if (udpPortNotCreated(jsonObj.parameters.localPort))
     {
-        var s = dgram.createSocket('udp4');
-        s.on('message', function(msg, rinfo) {
-            console.log(msg + JSON.stringify(rinfo));
-            if (wsconnected)
-            {
-                handleIncomingUDPMessages(msg.toString(), rinfo, s.address().port);
-            }
-            insertIntoLogTable("websocket", "UDP:"+rinfo.address+":"+rinfo.port, msg);
-        });
-        s.bind(port); 
-        connectionPorts.push(port);
-        insertIntoConnectionTable(protocol, ip, port);
+        let s = dgram.createSocket('udp4');
+        if (jsonObj.hasOwnProperty("parameters") && jsonObj.parameters.hasOwnProperty('subscribe')){
+            s.on('message', function(msg, rinfo) {
+                console.log(msg + JSON.stringify(rinfo));
+                if (wsconnected)
+                {
+                    handleIncomingUDPMessages(msg.toString(), rinfo, s.address().port);
+                }
+                insertIntoLogTable("websocket", "UDP:"+rinfo.address+":"+rinfo.port, msg);
+            });
+        }
+        if (jsonObj.hasOwnProperty("parameters") && jsonObj.parameters.hasOwnProperty('localPort')){
+            s.on('listening', () => {
+                insertIntoConnectionTable(jsonObj.protocol, "ip", s.address().port);
+                udpConnections.push(s);
+            });
+            s.bind(jsonObj.parameters.localPort); 
+        }
     }
-    else if(protocol==="TCP")
-    {
-        alert("we dont support tcp yet!");
-    }   
 }
+function udpPortNotCreated(port)
+{
+    udpConnections.forEach( connection => {
+        if (connection.address().port === port)
+        {
+            return true
+        }
+    });
+    return false;
+}
+
+function sendUdpCommand(jsonObj)
+{
+    udpConnections.forEach( connection => {
+    
+        if (connection.address().port === jsonObj.parameters.localPort)
+        {
+            var msg = new Buffer(jsonObj.parameters.data);
+            console.log("msg="+jsonObj.parameters.data);
+            console.log("ip="+jsonObj.parameters.remoteIp);
+            console.log("port="+jsonObj.parameters.remotePort);
+
+            connection.send(msg, 0, msg.length, jsonObj.parameters.remotePort, jsonObj.parameters.remoteIp);
+        }
+    });
+}
+
 function handleIncomingWebsocketMessage(message){
     var obj;
     try {
@@ -70,28 +101,28 @@ function handleIncomingWebsocketMessage(message){
         insertIntoConnectionTable("", "websocket", "invalid JSON object");    
         return;
     }
-    //console.log(obj.protocol);
-    if (obj.hasOwnProperty('subscribe')) { 
-        if (obj.subscribe === true && !connectionPorts.includes(obj.port))
-        {
-            console.log("subscribe = true");
-            newConnection(obj.protocol.toUpperCase(), obj.ip, obj.port)
+    
+    if (obj.hasOwnProperty('protocol') && obj.protocol.toLowerCase() === 'udp') { 
+        if (obj.command === 'send'){
+            sendUdpCommand(obj)
         }
+        else if (obj.command === 'create'){
+            createUdpConnection(obj);
+        }    
     }
-    if (obj.protocol.toLowerCase() === "udp")
-    {
-        console.log("try sending udp message: "+JSON.stringify(obj));
-        var data = new Buffer(obj.data);
-        udpSender.send(data, 0, message.length, obj.port, obj.ip)
-    }
+    
 }
 
 function handleIncomingUDPMessages(message, rinfo, destPort){
     obj = {
-        'ip': rinfo.address,
-        'port': destPort,
-        'protocol': 'UDP',
-        'data': message
+        "protocol": "udp",
+        "command": "receive",
+        "parameters": {
+            "remoteIp": rinfo.address,
+            "localport": destPort,
+            "remoteport": rinfo.port,
+            "data": message
+        }
     }
     if (wsConnection != null){
         wsConnection.send(JSON.stringify(obj));
