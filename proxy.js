@@ -6,7 +6,6 @@ var connectionPorts = [];
 var wsconnected = false;
 var wsConnection;
 var udpSender;
-var uspSenderPort;
 start();
 
 function start(){
@@ -37,7 +36,7 @@ function closeWebsocket(){
 function setupUDPsenderPort(port){
     udpSender = dgram.createSocket("udp4");
     udpSender.bind(port);
-    console.log("change udpsender port to:" + port);
+    //console.log("change udpsender port to:" + port);
 
 }
 
@@ -50,7 +49,7 @@ function newConnection(protocol, ip, port){
             console.log(msg + JSON.stringify(rinfo));
             if (wsconnected)
             {
-                handleIncomingUDPMessages(msg.toString(), rinfo);
+                handleIncomingUDPMessages(msg.toString(), rinfo, s.address().port);
             }
             insertIntoLogTable("websocket", "UDP:"+rinfo.address+":"+rinfo.port, msg);
         });
@@ -68,10 +67,10 @@ function handleIncomingWebsocketMessage(message){
     try {
         obj = JSON.parse(message)   
     } catch(error) {
-        insertIntoConnectionTable("", "wesocket", "invalid JSON object");    
+        insertIntoConnectionTable("", "websocket", "invalid JSON object");    
         return;
     }
-    console.log(obj.protocol);
+    //console.log(obj.protocol);
     if (obj.hasOwnProperty('subscribe')) { 
         if (obj.subscribe === true && !connectionPorts.includes(obj.port))
         {
@@ -87,10 +86,10 @@ function handleIncomingWebsocketMessage(message){
     }
 }
 
-function handleIncomingUDPMessages(message, rinfo){
+function handleIncomingUDPMessages(message, rinfo, destPort){
     obj = {
         'ip': rinfo.address,
-        'port': rinfo.port,
+        'port': destPort,
         'protocol': 'UDP',
         'data': message
     }
