@@ -6,13 +6,11 @@
 	"command": "create",
 	"parameters": {
 		"localPort": 8889,
-		"remotePort": 8889,
-		"remoteIp": "192.168.0.2"
-        "subscribe": true
+		"subscribe": true
 	}
 }
 
-## send a udp command
+## send a udp message
 {
    "protocol":"udp",
    "command":"send",
