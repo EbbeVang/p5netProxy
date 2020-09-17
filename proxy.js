@@ -44,8 +44,10 @@ function closeWebsocket(){
 }*/
 
 function createUdpConnection(jsonObj){
-    if (udpPortNotCreated(jsonObj.parameters.localPort))
+	
+    if (!udpPortExist(jsonObj.parameters.localPort))
     {
+		console.log("creating udp: " + jsonObj.parameters.localPort);
         let s = dgram.createSocket('udp4');
         if (jsonObj.hasOwnProperty("parameters") && jsonObj.parameters.hasOwnProperty('subscribe')){
             s.on('message', function(msg, rinfo) {
@@ -66,15 +68,20 @@ function createUdpConnection(jsonObj){
         }
     }
 }
-function udpPortNotCreated(port)
+function udpPortExist(_port)
 {
+	udpExists = false;
     udpConnections.forEach( connection => {
-        if (connection.address().port === port)
+		console.log(connection.address().port + " "+ _port)
+        if (connection.address().port == _port)
         {
-            return true
+			console.log("it exists");
+			
+            udpExists =  true;
+			
         }
     });
-    return false;
+    return udpExists;
 }
 
 function sendUdpCommand(jsonObj)
@@ -107,6 +114,7 @@ function handleIncomingWebsocketMessage(message){
             sendUdpCommand(obj)
         }
         else if (obj.command === 'create'){
+			console.log("starting to create")
             createUdpConnection(obj);
         }    
     }
