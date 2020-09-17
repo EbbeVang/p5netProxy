@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "electron-packager dist p5netProxy --out=dist --overwrite --platform:mac"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder -mw"
   },
   "author": "Ebbe Vang",
   "license": "ISC",
   "devDependencies": {
     "electron": "^10.1.1",
-    "electron-packager": "^15.1.0"
+    "electron-builder": "^22.8.1"
+
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.14.0",
