@@ -82,15 +82,7 @@
                     <button class="btn btn-primary" id="ws_open" onclick="openWebsocket($('#ws_port').val())">Open WebSocket</button>
                     <button class="btn btn-primary" id="ws_close" onclick="closeWebsocket()">Close Websocket</button>
                     </div>
-                    <hr/>
-                    <h2>UDP sender</h2>
-                    <div class="form-group">
-                        <label for="portNumber">Port number</label>
-                        <input type="number" class="form-control" id="udpPortNumber" length="7" aria-describedby="portNumberHelp" value="55055">
-                    </div>
-                    <div class="text-right">
-                        <button class="btn btn-primary" id="ws_open" onclick="setupUDPsenderPort($('#udpPortNumber').val())"">change portnumber</button>
-                    </div>
+                    
                     <hr />
                     
                     <div id="connections" class="text-right">
