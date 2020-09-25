@@ -5,6 +5,7 @@ let websocketserver;
 let udpConnections = [];
 var wsconnected = false;
 var wsConnection;
+let logEnabled = true;
 start();
 
 function start(){
@@ -137,10 +138,14 @@ function handleIncomingUDPMessages(message, rinfo, destPort){
     }    
 }
 function insertIntoLogTable(to, from, data){
-    $('#logTable tbody').prepend('<tr><td>'+to+'</td><td>'+from+'</td><td>'+data+'</td></tr>');
+    if (logEnabled){
+        $('#logTable tbody').prepend('<tr><td>'+to+'</td><td>'+from+'</td><td>'+data+'</td></tr>');
+    }
 }
 function insertIntoConnectionTable(protocol, ip, port){
-    $('#connectionTable > tbody').after('<tr><td>'+protocol+'</td><td>'+ip+'</td><td>'+port+'</td></tr>');
+    if (logEnabled){
+        $('#connectionTable > tbody').after('<tr><td>'+protocol+'</td><td>'+ip+'</td><td>'+port+'</td></tr>');
+    }
 }
 function clearLog(){
     console.log("tbody empty");
@@ -148,6 +153,10 @@ function clearLog(){
     //$("#logTable > tbody").empty();
     //$('#logTable').find('tbody').empty();
 }
-
+function toggleLog(){
+    logEnabled = !logEnabled;
+    let button = document.getElementById("toggleLog");
+    button.innerText = logEnabled ? "Disable Log" : "Enable Log";
+}
 
 
